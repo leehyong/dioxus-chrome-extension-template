@@ -55,17 +55,24 @@ module.exports = {
                 parallel: false
             },
             onBuildEnd: {
-                scripts: ['echo "Webpack onBuildEnd End"'],
-                blocking: true,
-                parallel: false
-            },
-            onBuildExit: {
-                scripts: [() => {
-                    const bundle_js_file_path = path.resolve( pkg, 'dist','better_spider_content.bundle.js');
-                    const content = fs.readFileSync(bundle_js_file_path,'utf8');
-                    let rep = content.replace(wasmModulePat, 'fetch(chrome.runtime.getURL("./src/dist/" + $2 + ".module.wasm"))')
-                    fs.writeFileSync(bundle_js_file_path, rep);
-                }],
+                scripts: [
+                    () => {
+                        console.log('replacing wasm fetch')
+                        const bundle_js_file_path = path.resolve(pkg, 'dist', 'better_spider_content.bundle.js');
+                        const content = fs.readFileSync(bundle_js_file_path, 'utf8');
+                        let rep = content.replace(wasmModulePat, 'fetch(chrome.runtime.getURL("./src/dist/" + $2 + ".module.wasm"))')
+                        fs.writeFileSync(bundle_js_file_path, rep);
+                        console.log('replacing wasm fetch, done！')
+                    },
+                    () => {
+                        console.log('copying css files')
+                        const cssfile = 'better-spider.css';
+                        const from = path.resolve(__dirname, 'assets', cssfile);
+                        const to = path.resolve(pkg, cssfile);
+                        fs.copyFileSync(from, to);
+                        console.log('copying css files, done!')
+                    }
+                ],
                 blocking: true,
                 parallel: false
             },
@@ -75,7 +82,7 @@ module.exports = {
         new webpack.ProvidePlugin({
             TextDecoder: ['text-encoding', 'TextDecoder'],
             TextEncoder: ['text-encoding', 'TextEncoder']
-        })
+        }),
     ],
 
     devtool: 'source-map'

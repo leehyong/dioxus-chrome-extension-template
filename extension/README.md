@@ -23,3 +23,23 @@ Run the following command in the root of the project to build the chrome extensi
 
 
 ### Package the extension(todo)
+
+
+
+## Project Structure
+
+```
+├── Cargo.toml
+├── Dioxus.toml
+├── index.html // Custom HTML is needed for this, to load the SW and manifest.
+├── LICENSE
+├── public
+│   ├── favicon.ico
+│   ├── logo_192.png
+│   ├── logo_512.png
+│   ├── manifest.json // The manifest file - edit this as you need to.
+│   └── sw.js // The service worker - you must edit this for actual projects.
+├── README.md
+└── src
+    └── main.rs
+```
