@@ -25,18 +25,18 @@
 //     }
 // })();
 // fixme: 怎么自动替换这里 ？
-// const uri= chrome.runtime.getURL("./js/dist/" + wasmModuleHash + ".module.wasm")
+// const uri= chrome.runtime.getURL("./src/dist/" + wasmModuleHash + ".module.wasm")
 
 const better_spider_id = 'better-spider-box';
-const div = div = document.createElement('div')
+const div = document.createElement('div')
 div.setAttribute('id', better_spider_id);
-document.body.appendChild(div)
+document.body.appendChild(div);
 
-import * as css from "./better_spider.css";
-const style = document.createElement('style');
-console.log('spider css',css)
-style.innerHTML = css;
-document.body.appendChild(style);
+const link = document.createElement("link");
+link.href = chrome.runtime.getURL("src/better-spider.css");
+link.type = "text/css";
+link.rel = "stylesheet";
+document.getElementsByTagName("head")[0].appendChild(link);
 
 import { run } from './wasm/better_spider';
 run();

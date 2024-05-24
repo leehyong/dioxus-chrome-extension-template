@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const pkg = "./manifest-v3/js"
+const pkg = "./manifest-v3/src"
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const mode = 'development';
@@ -48,7 +48,7 @@ module.exports = {
                         }
                         console.log("removing old files: " + paths.join(',') + ',done!')
                     },
-                    'wasm-pack build --release --no-typescript --out-dir "./manifest-v3/js/wasm" --out-name "better_spider" --target bundler'
+                    'wasm-pack build --release --no-typescript --out-dir "./manifest-v3/src/wasm" --out-name "better_spider" --target bundler'
                 ],
                 blocking: true,
                 parallel: false
@@ -72,9 +72,5 @@ module.exports = {
         })
     ],
 
-    module: {
-        rules: [
-        ],
-    },
     devtool: 'source-map'
 };
