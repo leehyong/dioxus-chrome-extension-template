@@ -8,6 +8,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+path = 'src/main.rs'
+
 [dependencies]
 dioxus = { workspace = true, features = ["web"] }
 

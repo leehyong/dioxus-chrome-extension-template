@@ -3,11 +3,11 @@ const fs = require('fs');
 const pkg = "./manifest-v3/src"
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const mode = 'development';
+// const mode = 'development';
+const mode = 'production';
 const devMode = mode == "production";
-// const mode = 'production'
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
-const wasmModulePat = /\(.*module\.wasm\"\)/; 
+const wasmModulePat = /fetch\((.*)\s*\+\s*\"\"\s*\+\s*(.*)\s*\+\s*\"\.module\.wasm\"\)/;
 
 function delDir(path) {
     let files = [];
@@ -60,7 +60,12 @@ module.exports = {
                 parallel: false
             },
             onBuildExit: {
-                scripts: ['echo "Webpack onBuildExit End"'],
+                scripts: [() => {
+                    const bundle_js_file_path = path.resolve( pkg, 'dist','better_spider_content.bundle.js');
+                    const content = fs.readFileSync(bundle_js_file_path,'utf8');
+                    let rep = content.replace(wasmModulePat, 'fetch(chrome.runtime.getURL("./src/dist/" + $2 + ".module.wasm"))')
+                    fs.writeFileSync(bundle_js_file_path, rep);
+                }],
                 blocking: true,
                 parallel: false
             },
