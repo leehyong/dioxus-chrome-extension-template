@@ -6,4 +6,4 @@ members = ["desktop", "extension"]
 [workspace.dependencies]
 tracing = "0.1.40"
 dioxus-logger = "0.5.0"
-dioxus = { version = "0.5", features = ["router", "macro"] }
+dioxus = { version = "0.5", features = ["macro"] }

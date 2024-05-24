@@ -13,7 +13,9 @@ path = "src/lib.rs"
 path = 'src/main.rs'
 name = 'better-spider'
 
+
 [dependencies]
+
 dioxus = { workspace = true, features = ["web"] }
 
 # Debug

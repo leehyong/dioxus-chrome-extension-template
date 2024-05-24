@@ -1,40 +1,13 @@
-body {
-    background-color: #0634ea;
-}
 
-#main {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
-}
-
-#links {
-    width: 400px;
-    text-align: left;
-    font-size: x-large;
-    color: white;
-    display: flex;
-    flex-direction: column;
-}
-
-#links a {
-    color: white;
-    text-decoration: none;
-    margin-top: 20px;
-    margin: 10px;
-    border: white 1px solid;
+div#main,
+div#better-spider-box {
+    position: fixed;
+    width: 200px;
+    height: 400px;
+    bottom: 10px;
+    right: 20px;
+    background-color: pink;
+    z-index: 999999999999999999999999;
     border-radius: 5px;
     padding: 10px;
-}
-
-#links a:hover {
-    background-color: #1f1f1f;
-    cursor: pointer;
-}
-
-#header {
-    max-width: 1200px;
 }
