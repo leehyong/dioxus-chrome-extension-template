@@ -22,7 +22,7 @@ pub fn run() {
     .launch(App);
 }
 
-fn App() -> Element {
+pub fn App() -> Element {
     rsx! {
         Router::<Route> {}
     }
