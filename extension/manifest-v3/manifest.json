@@ -42,8 +42,8 @@
                 "*://*/*"
             ],
             "resources": [
-                // "js/dist/*.js",
-                "js/dist/*.wasm"
+                "js/dist/*.wasm",
+                "js/*.css"
             ]
         }
     ]
