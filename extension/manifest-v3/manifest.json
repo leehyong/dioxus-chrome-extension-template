@@ -42,8 +42,7 @@
                 "*://*/*"
             ],
             "resources": [
-                "js/dist/*.wasm",
-                "js/*.css"
+                "js/dist/*.wasm"
             ]
         }
     ]

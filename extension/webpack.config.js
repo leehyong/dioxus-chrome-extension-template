@@ -4,12 +4,11 @@ const pkg = "./manifest-v3/js"
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const mode = 'development';
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const devMode = mode == "production";
 // const mode = 'production'
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 
-function delDir(path){
+function delDir(path) {
     let files = [];
     if (fs.existsSync(path)) {
         files = fs.readdirSync(path);
@@ -38,16 +37,16 @@ module.exports = {
     },
     plugins: [
         new WebpackShellPluginNext({
-            dev:devMode,
+            dev: devMode,
             onBuildStart: {
                 scripts: [
                     () => {
                         const paths = [pkg + '/wasm', pkg + '/dist']
-                        console.log("removing old files: "+ paths.join(','))
+                        console.log("removing old files: " + paths.join(','))
                         for (let _path of paths) {
                             delDir(path.resolve(_path))
                         }
-                        console.log("removing old files: "+ paths.join(',')+',done!')
+                        console.log("removing old files: " + paths.join(',') + ',done!')
                     },
                     'wasm-pack build --release --no-typescript --out-dir "./manifest-v3/js/wasm" --out-name "better_spider" --target bundler'
                 ],
@@ -71,20 +70,10 @@ module.exports = {
             TextDecoder: ['text-encoding', 'TextDecoder'],
             TextEncoder: ['text-encoding', 'TextEncoder']
         })
-    ].concat(devMode ? [] : [new MiniCssExtractPlugin()]),
+    ],
 
     module: {
         rules: [
-            {
-                // If you enable `experiments.css` or `experiments.futureDefaults`, please uncomment line below
-                // type: "javascript/auto",
-                test: /\.(le|c)ss$/i,
-                use: [
-                    devMode ? "style-loader" : MiniCssExtractPlugin.loader,
-                    "css-loader",
-                    "less-loader",
-                ],
-            },
         ],
     },
     devtool: 'source-map'
