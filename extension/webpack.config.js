@@ -7,6 +7,7 @@ const mode = 'development';
 const devMode = mode == "production";
 // const mode = 'production'
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
+const wasmModulePat = /\(.*module\.wasm\"\)/; 
 
 function delDir(path) {
     let files = [];
