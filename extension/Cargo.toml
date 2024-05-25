@@ -30,7 +30,11 @@ dioxus-logger = { workspace = true }
 console_error_panic_hook = { version = "~0.1" }
 wasm-bindgen = "~0.2"
 gloo = { version = "~0.11.0", features = ["futures"] }
-async-rwlock = "~1.3.0"
+serde = { version = "~1.0.202", features = ["derive"] }
+serde_json = { version = "~1.0.117", features = ["indexmap"] }
+futures = "0.3.30"
+tokio = { version = "~1.37.0", features = ["sync", "macros"] }
+wasm-bindgen-futures = "0.4.42"
 
 
 [dependencies.web-sys]

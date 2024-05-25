@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 use dioxus::web::Config;
 use tracing::Level;
 use wasm_bindgen::prelude::*;
+pub mod ws;
 
 #[wasm_bindgen]
 pub fn run() {
@@ -19,6 +20,7 @@ pub fn launch_run(){
 }
 
 fn App() -> Element {
+    let document = web_sys::window().unwrap().document().unwrap();
     let mut count = use_signal(|| 0);
 
     rsx! {
