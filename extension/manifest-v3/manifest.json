@@ -32,7 +32,7 @@
                 "*://*/*"
             ],
             "js": [
-                "js/dist/better_spider_content.bundle.js"
+                "src/dist/better_spider_content.bundle.js"
             ]
         }
     ],
@@ -42,8 +42,8 @@
                 "*://*/*"
             ],
             "resources": [
-                // "js/dist/*.js",
-                "js/dist/*.wasm"
+                "src/dist/*.wasm",
+                "src/*.css"
             ]
         }
     ]

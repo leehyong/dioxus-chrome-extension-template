@@ -5,6 +5,7 @@
 * [dioxus-cli](https://github.com/DioxusLabs/dioxus/tree/main/packages/cli) `cargo install dioxus-cli`
 * [webpack](https://www.webpackjs.com/guides/installation/) `npm install --save-dev webpack`
 
+# `cd extension` , and run the following commands
 
 # Development WebUI
 
