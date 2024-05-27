@@ -6,6 +6,7 @@
 /**/.dioxus/
 /**/.vscode/
 /**/pkg/
+/**/.idea
 /extension/manifest-v3/src/wasm
 /extension/manifest-v3/src/better-spider.css
 /extension/manifest-v3/src/dist

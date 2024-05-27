@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_logger::tracing::*;
 use futures::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
@@ -7,7 +8,6 @@ use gloo::net::websocket::{futures::WebSocket, Message};
 use serde::{Deserialize, Serialize};
 use std::{rc::Rc, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
-use tracing::error;
 use wasm_bindgen_futures::spawn_local;
 
 #[derive(Clone)]
@@ -93,7 +93,10 @@ impl BetterSpiderWebSocket {
 }
 
 /// Provide websocket context with a handler for incoming reqwasm Messages
-pub fn use_ws_context_provider(url: &str, handler: impl Fn(Message) + 'static) {
+pub fn use_ws_context_provider(
+    url: &str,
+    handler: impl Fn(Message) + 'static,
+) -> BetterSpiderWebSocket {
     let handler = Rc::new(handler);
     use_context_provider(move || {
         let ws = BetterSpiderWebSocket::new(url);
@@ -131,11 +134,14 @@ pub fn use_ws_context_provider(url: &str, handler: impl Fn(Message) + 'static) {
             }
         });
         ws
-    });
+    })
 }
 
 /// Provide websocket context with a handler for incoming plaintext messages
-pub fn use_ws_context_provider_text(url: &str, handler: impl Fn(String) + 'static) {
+pub fn use_ws_context_provider_text(
+    url: &str,
+    handler: impl Fn(String) + 'static,
+) -> BetterSpiderWebSocket {
     let handler = move |msg| {
         if let Message::Text(text) = msg {
             handler(text)
@@ -147,7 +153,10 @@ pub fn use_ws_context_provider_text(url: &str, handler: impl Fn(String) + 'stati
 
 /// Provide websocket context with a handler for incoming JSON messages.
 /// Note that the message type T must implement Deserialize.
-pub fn use_ws_context_provider_json<T>(url: &str, handler: impl Fn(T) + 'static)
+pub fn use_ws_context_provider_json<T>(
+    url: &str,
+    handler: impl Fn(T) + 'static,
+) -> BetterSpiderWebSocket
 where
     T: for<'de> Deserialize<'de>,
 {

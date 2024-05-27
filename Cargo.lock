@@ -1311,6 +1311,7 @@ dependencies = [
  "dioxus-logger",
  "futures",
  "gloo 0.11.0",
+ "once_cell",
  "serde",
  "serde_json",
  "tokio",

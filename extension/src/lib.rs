@@ -1,26 +1,30 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
 use dioxus::web::Config;
-use tracing::Level;
+use tracing::{info, Level};
 use wasm_bindgen::prelude::*;
 pub mod ws;
+pub mod global;
+mod doc;
+use global::*;
 
+use crate::doc::GlobalEventListener;
 #[wasm_bindgen]
 pub fn run() {
     console_error_panic_hook::set_once();
     // Init logger
     launch_run();
 }
-
+const spider_box_id:&'static str = "better-spider-box";
 pub fn launch_run(){
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
     LaunchBuilder::web()
-    .with_cfg(Config::new().rootname("better-spider-box"))
+    .with_cfg(Config::new().rootname(spider_box_id))
     .launch(App);
 }
 
 fn App() -> Element {
-    let document = web_sys::window().unwrap().document().unwrap();
+    let _listener = GlobalEventListener::new();
     let mut count = use_signal(|| 0);
 
     rsx! {
