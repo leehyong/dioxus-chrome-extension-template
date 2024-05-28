@@ -44,6 +44,7 @@ features = [
     'Document',
     "Element",
     "HtmlElement",
+    "SvgElement",
     "DomTokenList",
     "Event",
     "EventListener",

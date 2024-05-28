@@ -42,12 +42,11 @@ pub fn launch_run() {
 // static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
 
 fn App() -> Element {
-    let cor = use_coroutine(move |rx| async move {
+    let cor = use_coroutine(move |rx| async {
         init_document_mousemove_event();
     });
     cor.send(1);
     let mut count = use_signal(|| 0);
-
     rsx! {
         div {
             // onmounted: move|_|{info!("{current_element_xpath}-{old_element_xpath}");},
@@ -95,15 +94,11 @@ fn init_document_mousemove_event() {
                 old_element = Some(cur.clone());
             }
             if let Some(old) = &old_element {
-                old.dyn_ref::<HtmlElement>()
-                    .unwrap()
-                    .class_list()
+                old.class_list()
                     .remove_1(HIGHLIGHT_CLASS)
                     .unwrap_or_default();
             }
             mouse_element
-                .dyn_ref::<HtmlElement>()
-                .unwrap()
                 .class_list()
                 .add_1(HIGHLIGHT_CLASS)
                 .unwrap_or_default();
