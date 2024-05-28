@@ -31,7 +31,7 @@ watch_path = ["src", "assets"]
 
 # CSS style file
 
-style = ["better-spider.css"]
+style = ["hover-min.css", "animate.min.css", "better-spider.css"]
 
 # Javascript code file
 script = []

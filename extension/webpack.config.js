@@ -7,6 +7,7 @@ const webpack = require('webpack');
 const mode = 'production';
 const devMode = mode == "production";
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
+const { log } = require('console');
 const wasmModulePat = /fetch\((.*)\s*\+\s*\"\"\s*\+\s*(.*)\s*\+\s*\"\.module\.wasm\"\)/;
 
 function delDir(path) {
@@ -67,11 +68,22 @@ module.exports = {
                     },
                     () => {
                         console.log('copying css files')
-                        const cssfile = 'better-spider.css';
-                        const from = path.resolve(__dirname, 'assets', cssfile);
-                        const to = path.resolve(pkg, cssfile);
-                        fs.copyFileSync(from, to);
-                        console.log('copying css files, done!')
+                        const copyFiles = [];
+                        const cdir = path.resolve(__dirname, 'assets')
+                        const files = fs.readdirSync(cdir)
+                        files.forEach(f => {
+                            console.log(f);
+                            const p = path.resolve(cdir, f);
+                            if(fs.statSync(p).isFile() && f.endsWith(".css")){
+                                copyFiles.push(f);
+                                const to = path.resolve(pkg, f);
+                                fs.copyFileSync(p, to);
+                            }
+                        })
+                        // const cssfile = 'better-spider.css';
+                        // const from = path.resolve(__dirname, 'assets', cssfile);
+                        
+                        console.log('copying css files:'+ copyFiles.join(",") + "done!")
                     }
                 ],
                 blocking: true,

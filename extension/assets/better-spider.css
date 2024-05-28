@@ -12,7 +12,10 @@
 }
 
 .highlight{
-    background-color:beige;
+    background-color:rgb(95, 152, 128);
+    box-shadow: 12px 12px 8px 2px rgba(0, 0, 255, .2);
+    animation: flash; /* referring directly to the animation's @keyframe declaration */
+    animation-duration: 2s; /* don't forget to set a duration! */
 }
 
 .selected{
