@@ -3,8 +3,8 @@ const fs = require('fs');
 const pkg = "./manifest-v3/src"
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const mode = 'development';
-// const mode = 'production';
+// const mode = 'development';
+const mode = 'production';
 const devMode = mode == "production";
 const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 const wasmModulePat = /fetch\((.*)\s*\+\s*\"\"\s*\+\s*(.*)\s*\+\s*\"\.module\.wasm\"\)/;

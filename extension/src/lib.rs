@@ -12,10 +12,13 @@ use tracing::{info, Level};
 use wasm_bindgen::prelude::*;
 
 mod global;
+mod uitl;
 pub mod ws;
 use global::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlElement;
+
+use crate::uitl::element_xpath;
 
 #[wasm_bindgen]
 pub fn run() {
@@ -36,10 +39,9 @@ pub fn launch_run() {
 }
 
 fn App() -> Element {
-    let mut current_element: Signal<Option<web_sys::Element>> = use_signal(|| None);
-    let mut old_element: Signal<Option<web_sys::Element>> = use_signal(|| None);
-    info!("start element");
-    spawn_local(async move {
+    let mut current_element_xpath = use_signal_sync(|| "".to_string());
+    let mut old_element_xpath = use_signal_sync(|| "".to_string());
+    use_hook(move || {
         let window = web_sys::window().expect("should have a window in this context");
         let doc_ = window.document().expect("window should have a document");
         let doc_clone = doc_.clone();
@@ -65,32 +67,31 @@ fn App() -> Element {
                 return;
             }
             if let Some(mouse_element) = doc_clone.element_from_point(x as f32, y as f32) {
-                let mut cur_ele = None;
-                if let Some(cur) = &*current_element.read() {
-                    cur_ele = Some(cur.clone());
-                    if mouse_element == *cur {
-                        info!("mouse element is the same with the current element!");
-                        return;
-                    }
+                let mouse_element_xpath = element_xpath(mouse_element);
+                info!("mouse_element_xpath:{mouse_element_xpath}");
+                let mut cur_ele_xpath = current_element_xpath.read();
+                if mouse_element_xpath == *cur_ele_xpath {
+                    info!("mouse element is the same with the current element!");
+                    return;
                 }
-                // remove related css class
-                if let Some(old_ele) = &*old_element.read() {
-                    old_ele
-                        .dyn_ref::<HtmlElement>()
-                        .unwrap()
-                        .class_list()
-                        .remove_1(HIGHLIGHT_CLASS)
-                        .unwrap_or_default();
-                }
-                mouse_element
-                    .dyn_ref::<HtmlElement>()
-                    .unwrap()
-                    .class_list()
-                    .add_1(HIGHLIGHT_CLASS)
-                    .unwrap_or_default();
-                old_element.set(cur_ele);
-                current_element.set(Some(mouse_element.clone()));
-                info!("changed current element!{mouse_element:?}")
+                // // remove related css class
+                // if let Some(old_ele) = &*old_element.read() {
+                //     old_ele
+                //         .dyn_ref::<HtmlElement>()
+                //         .unwrap()
+                //         .class_list()
+                //         .remove_1(HIGHLIGHT_CLASS)
+                //         .unwrap_or_default();
+                // }
+                // mouse_element
+                //     .dyn_ref::<HtmlElement>()
+                //     .unwrap()
+                //     .class_list()
+                //     .add_1(HIGHLIGHT_CLASS)
+                //     .unwrap_or_default();
+                // old_element.set(cur_ele);
+                // current_element.set(Some(mouse_element.clone()));
+                // info!("changed current element!{mouse_element:?}")
             }
         });
         let doc_box = Box::new(doc_listener);
@@ -101,7 +102,7 @@ fn App() -> Element {
 
     rsx! {
         div {
-            onmounted: move|_|{info!("{current_element:?}-{old_element:?}");},
+            onmounted: move|_|{info!("{current_element_xpath}-{old_element_xpath}");},
             h1 { "High-Five counter: {count}" }
             button { onclick: move |_| count += 1, "Up high!" }
             button { onclick: move |_| count -= 1, "Down low!" }
