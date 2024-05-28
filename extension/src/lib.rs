@@ -7,11 +7,10 @@ use once_cell::sync::Lazy;
 use tracing::{info, Level};
 use wasm_bindgen::prelude::*;
 pub mod ws;
-pub mod global;
+mod global;
 mod doc;
 use global::*;
 
-use crate::doc::GlobalEventListener;
 #[wasm_bindgen]
 pub fn run() {
     console_error_panic_hook::set_once();
@@ -28,7 +27,6 @@ pub fn launch_run(){
 }
 
 fn App() -> Element {
-    let _listener = GlobalEventListener::new();
     let mut count = use_signal(|| 0);
 
     rsx! {

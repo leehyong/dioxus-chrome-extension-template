@@ -6,14 +6,16 @@ use serde::Deserialize;
 use std::sync::Mutex;
 use web_sys::Element;
 
-static mut GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData::default()));
+pub static GLOBAL_DATA: Lazy<Mutex<GlobalData>> = Lazy::new(|| Mutex::new(GlobalData::default()));
 
-static mut GLOBAL_IS_IN_SPIDER_BOX: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
+pub static GLOBAL_CONFIG: Lazy<Mutex<GlobalConfig>> =
+    Lazy::new(|| Mutex::new(GlobalConfig::default()));
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GlobalConfig {
     pub highlight: String,
     pub selected: String,
+    pub is_toolbox: bool,
 }
 
 impl Default for GlobalConfig {
@@ -21,6 +23,7 @@ impl Default for GlobalConfig {
         Self {
             highlight: "highlight".to_string(),
             selected: "selected".to_string(),
+            is_toolbox: false,
         }
     }
 }
@@ -31,9 +34,10 @@ pub struct GlobalData {
     pub current: Option<Element>,
     pub task_id: String,
     pub task_step: u64,
-    pub highlight: String,
-    pub selected: String,
 }
+unsafe impl Send for GlobalData{}
+unsafe impl Sync for GlobalData{}
+
 impl Default for GlobalData {
     fn default() -> Self {
         Self {
@@ -41,8 +45,6 @@ impl Default for GlobalData {
             current: Default::default(),
             task_id: Default::default(),
             task_step: Default::default(),
-            highlight: "highlight".to_string(),
-            selected: "selected".to_string(),
         }
     }
 }
