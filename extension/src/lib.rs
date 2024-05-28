@@ -37,11 +37,11 @@ pub fn launch_run() {
         .with_cfg(Config::new().rootname(SPIDER_BOX_ID))
         .launch(App);
 }
+static current_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
+static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
 
 fn App() -> Element {
-    let mut current_element_xpath = use_signal_sync(|| "".to_string());
-    let mut old_element_xpath = use_signal_sync(|| "".to_string());
-    use_hook(move || {
+    let cor = use_coroutine(move |rx| async move {
         let window = web_sys::window().expect("should have a window in this context");
         let doc_ = window.document().expect("window should have a document");
         let doc_clone = doc_.clone();
@@ -96,8 +96,8 @@ fn App() -> Element {
         });
         let doc_box = Box::new(doc_listener);
         Box::leak(doc_box);
-});
-
+    });
+    cor.send(1);
     let mut count = use_signal(|| 0);
 
     rsx! {
