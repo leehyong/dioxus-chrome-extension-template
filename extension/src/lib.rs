@@ -37,14 +37,16 @@ pub fn launch_run() {
         .with_cfg(Config::new().rootname(SPIDER_BOX_ID))
         .launch(App);
 }
-static current_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
-static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
+// static current_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
+// static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
 
 fn App() -> Element {
     let cor = use_coroutine(move |rx| async move {
         let window = web_sys::window().expect("should have a window in this context");
         let doc_ = window.document().expect("window should have a document");
         let doc_clone = doc_.clone();
+        let mut current_element_xpath = "".to_string();
+        // let mut current_element:Element;
         info!("start element coroutine");
         let doc_listener = EventListener::new(&doc_, "mousemove", move |event| {
             info!("start element coroutine in mousemove");
@@ -69,11 +71,11 @@ fn App() -> Element {
             if let Some(mouse_element) = doc_clone.element_from_point(x as f32, y as f32) {
                 let mouse_element_xpath = element_xpath(mouse_element);
                 info!("mouse_element_xpath:{mouse_element_xpath}");
-                let mut cur_ele_xpath = current_element_xpath.read();
-                if mouse_element_xpath == *cur_ele_xpath {
+                if mouse_element_xpath == *current_element_xpath.as_str() {
                     info!("mouse element is the same with the current element!");
                     return;
                 }
+                current_element_xpath = mouse_element_xpath;
                 // // remove related css class
                 // if let Some(old_ele) = &*old_element.read() {
                 //     old_ele
@@ -102,7 +104,7 @@ fn App() -> Element {
 
     rsx! {
         div {
-            onmounted: move|_|{info!("{current_element_xpath}-{old_element_xpath}");},
+            // onmounted: move|_|{info!("{current_element_xpath}-{old_element_xpath}");},
             h1 { "High-Five counter: {count}" }
             button { onclick: move |_| count += 1, "Up high!" }
             button { onclick: move |_| count -= 1, "Down low!" }
