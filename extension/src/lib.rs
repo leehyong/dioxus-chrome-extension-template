@@ -1,6 +1,9 @@
 #![allow(non_snake_case)]
+#![allow(unused)]
+#![allow(dead_code)]
 use dioxus::prelude::*;
 use dioxus::web::Config;
+use once_cell::sync::Lazy;
 use tracing::{info, Level};
 use wasm_bindgen::prelude::*;
 pub mod ws;
@@ -15,11 +18,12 @@ pub fn run() {
     // Init logger
     launch_run();
 }
-const spider_box_id:&'static str = "better-spider-box";
+const SPIDER_BOX_ID:&'static str = "better-spider-box";
+// static  LIS:Lazy<GlobalEventListener> = Lazy::new(|| GlobalEventListener::new());
 pub fn launch_run(){
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
     LaunchBuilder::web()
-    .with_cfg(Config::new().rootname(spider_box_id))
+    .with_cfg(Config::new().rootname(SPIDER_BOX_ID))
     .launch(App);
 }
 

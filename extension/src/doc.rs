@@ -36,8 +36,8 @@ impl GlobalEventListener {
             let mut is_toolbox: Signal<bool> = use_context();
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let spider_box = doc_clone
-                .get_element_by_id(crate::spider_box_id)
-                .expect(&format!("should have a '{}' of div ", crate::spider_box_id));
+                .get_element_by_id(crate::SPIDER_BOX_ID)
+                .expect(&format!("should have a '{}' of div ", crate::SPIDER_BOX_ID));
             let spider_box_html = spider_box.dyn_ref::<HtmlElement>().unwrap_throw();
             let x = event.client_x();
             let y = event.client_y();
