@@ -2,6 +2,7 @@
 #![allow(unused)]
 #![allow(dead_code)]
 use std::borrow::Borrow;
+use std::sync::Arc;
 
 use dioxus::html::mo;
 use dioxus::prelude::*;
@@ -9,19 +10,22 @@ use dioxus::signals::Readable;
 use dioxus::web::Config;
 use futures::StreamExt;
 use gloo::events::EventListener;
-use tracing::{debug, info, Level};
+use tracing::{debug, info, warn, Level};
 use wasm_bindgen::prelude::*;
 
-mod global;
-mod uitl;
 mod doc;
+mod error;
+mod global;
+mod msg;
+mod uitl;
 pub mod ws;
+use crate::doc::{handle_select_nodes, init_document_events};
+use crate::uitl::element_xpath;
 use global::*;
+pub use msg::ActionMsg;
 use web_sys::HtmlElement;
 
-use crate::uitl::element_xpath;
-use crate::doc::init_document_events;
-
+type SelectedXpathBox = Box<[Arc<String>; 2]>;
 #[wasm_bindgen]
 pub fn run() {
     console_error_panic_hook::set_once();
@@ -43,7 +47,40 @@ pub fn launch_run() {
 // static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
 
 fn App() -> Element {
-    init_document_events();
+    let mut selected_old_xpaths: Signal<SelectedXpathBox> =
+        use_signal(|| SelectedXpathBox::default());
+    let mut selected_new_xpaths: Signal<SelectedXpathBox> =
+        use_signal(|| SelectedXpathBox::default());
+    let msg_sender = use_coroutine(|mut rx| async move {
+        while let Some(msg) = rx.next().await {
+            match msg {
+                ActionMsg::SelectedFromMouseupEvent(s) => {
+                    {
+                        let selected_old_xpaths_ = selected_new_xpaths.read();
+                        selected_old_xpaths.set((*selected_old_xpaths_).clone());
+                    }
+                    selected_new_xpaths.set(s);
+                }
+                ActionMsg::SelectAllRelated => {
+                    let selected_new_xpaths_ = selected_new_xpaths.read();
+                    if selected_new_xpaths_.is_empty() {
+                        warn!("no selected nodes!");
+                        return;
+                    }
+                    let selected_old_xpaths_ = selected_old_xpaths.read();
+                    if !selected_old_xpaths_.is_empty() {
+                        handle_select_nodes((*selected_old_xpaths_).as_ref(), false);
+                    }
+                    handle_select_nodes((*selected_new_xpaths_).as_ref(), true);
+                }
+                ActionMsg::ClearSelectAllRelated => {
+                    
+                }
+                _ => todo!(),
+            }
+        }
+    });
+    init_document_events(msg_sender);
 
     let mut count = use_signal(|| 0);
     rsx! {
@@ -52,7 +89,10 @@ fn App() -> Element {
             h1 { "High-Five counter: {count}" }
             button { onclick: move |_| count += 1, "Up high!" }
             button { onclick: move |_| count -= 1, "Down low!" }
+
+            button { onclick: move |_| msg_sender.send(ActionMsg::SelectAllRelated), "select all related" }
+            button { onclick: move |_| msg_sender.send(ActionMsg::ClearSelectAllRelated), "clear selected" }
+
         }
     }
 }
-

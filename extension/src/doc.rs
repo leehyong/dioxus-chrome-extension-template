@@ -1,17 +1,19 @@
+use dioxus::html::geometry::euclid::vec2;
 use dioxus::html::mo;
 use dioxus::prelude::*;
 use gloo::events::EventListener;
 use std::collections::{btree_map::Entry, BTreeMap};
+use std::sync::Arc;
 use tracing::{debug, info, warn};
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, *};
 
-use crate::uitl::element_xpath;
-use crate::{HIGHLIGHT_CLASS, SELECTED_CLASS, SPIDER_BOX_ID};
+use crate::uitl::{element_xpath, elements_common_xpath};
+use crate::{ActionMsg, HIGHLIGHT_CLASS, SELECTED_CLASS, SPIDER_BOX_ID};
 
-pub fn init_document_events() {
+pub fn init_document_events(coroutine: Coroutine<ActionMsg>) {
     init_document_mousemove_event();
-    init_document_mouseup_event();
+    init_document_mouseup_event(coroutine);
 }
 
 fn init_document_mousemove_event() {
@@ -43,12 +45,12 @@ fn init_document_mousemove_event() {
     Box::leak(doc_box);
 }
 
-fn init_document_mouseup_event() {
+fn init_document_mouseup_event(coroutine: Coroutine<ActionMsg>) {
     let window = web_sys::window().expect("should have a window in this context");
     let doc_ = window.document().expect("window should have a document");
     let doc_clone = doc_.clone();
     // let mut current_element_xpath = "".to_string();
-    let mut selected_elements: BTreeMap<String, Element> = BTreeMap::new();
+    let mut selected_elements: BTreeMap<Arc<String>, Element> = BTreeMap::new();
     let doc_listener = EventListener::new(&doc_, "mouseup", move |event| {
         let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
         // only the right button  handles this function
@@ -61,7 +63,9 @@ fn init_document_mouseup_event() {
         }
         debug!("start element EventListener about mouseup of the right mouse button");
         if let Some(mouse_element) = get_element_from_mouse_point(&doc_clone, event) {
-            let xpath = element_xpath(mouse_element.clone());
+            let xpath = Arc::new(element_xpath(mouse_element.clone()));
+            let old_len = selected_elements.len();
+
             match selected_elements.entry(xpath.clone()) {
                 Entry::Vacant(v) => {
                     debug!("selected current element!{mouse_element:?}");
@@ -76,6 +80,16 @@ fn init_document_mouseup_event() {
                     remove_selected(&v);
                 }
             }
+            if selected_elements.len() > 2 {
+                // ensure only owns at most 2 elements
+                let (_, v) = selected_elements.pop_first().unwrap();
+                remove_selected(&v);
+            }
+            let mut selected_xpaths = Box::new([
+                selected_elements.first_entry().unwrap().key().clone(),
+                selected_elements.last_entry().unwrap().key().clone(),
+            ]);
+            coroutine.send(ActionMsg::SelectedFromMouseupEvent(selected_xpaths))
         }
     });
     let doc_box = Box::new(doc_listener);
@@ -140,4 +154,49 @@ fn remove_selected(element: &Element) {
             // "animate__slower",
         )
         .unwrap_or_default();
+}
+
+pub fn handle_select_nodes(xpaths: &[Arc<String>], is_new: bool) {
+    let window = web_sys::window().expect("should have a window in this context");
+    let doc_ = window.document().expect("window should have a document");
+    match elements_common_xpath(xpaths) {
+        Ok(xpath) => match doc_.evaluate_with_opt_callback_and_type(&xpath, &doc_, None, 5) {
+            Ok(iter_res) => {
+                while let Ok(n) = iter_res.iterate_next() {
+                    if let Some(n) = n {
+                        // fixme:
+                        match n.dyn_into::<web_sys::Element>() {
+                            Ok(ele) => {
+                                if is_new {
+                                    add_selected(&ele);
+                                } else {
+                                    remove_selected(&ele);
+                                }
+                            }
+                            Err(n) => match n.dyn_into::<web_sys::HtmlElement>() {
+                                Ok(ele) => {
+                                    if is_new {
+                                        add_selected(&ele);
+                                    } else {
+                                        remove_selected(&ele);
+                                    }
+                                }
+                                Err(e) => {
+                                    tracing::error!("{}-{}-{:?}", e.node_name(), e.node_type(), e.node_value());
+                                }
+                            },
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!("{e:?}");
+            }
+        },
+        Err(e) => {
+            tracing::error!("{e:?}")
+        }
+    }
 }
