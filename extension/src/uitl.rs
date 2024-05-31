@@ -92,27 +92,6 @@ pub fn display_element_info_option(node: &Option<Element>) -> String {
     }
 }
 
-pub fn get_element_from_mouse_point(doc: &Document, e: &Event) -> Option<Element> {
-    let event = e.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
-    let spider_box = doc
-        .get_element_by_id(SPIDER_BOX_ID)
-        .expect(&format!("should have a '{}' of div ", SPIDER_BOX_ID));
-    let spider_box_html = spider_box.dyn_ref::<HtmlElement>().unwrap_throw();
-    let x = event.client_x();
-    let y = event.client_y();
-    let x_box_offset_left = spider_box_html.offset_left();
-    let y_box_offset_top = spider_box_html.offset_top();
-    let box_offset_width = spider_box_html.offset_width();
-    let box_offset_height = spider_box_html.offset_height();
-    let x_max = x_box_offset_left + box_offset_width;
-    let y_max = y_box_offset_top + box_offset_height;
-    // check if the mouse moves into the spider boox
-    if x >= x_box_offset_left && x <= x_max && y >= y_box_offset_top && y <= y_max {
-        debug!("mouse in the spider box");
-        return None;
-    }
-    doc.element_from_point(x as f32, y as f32)
-}
 
 pub fn remove_highlight(element: &Element) {
     element
