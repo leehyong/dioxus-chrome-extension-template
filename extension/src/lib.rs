@@ -13,14 +13,14 @@ use gloo::events::EventListener;
 use tracing::{debug, info, warn, Level};
 use wasm_bindgen::prelude::*;
 
-mod doc;
+mod document;
 mod error;
 mod global;
 mod msg;
 mod uitl;
 pub mod ws;
-use crate::doc::{handle_select_nodes, init_document_events};
 use crate::uitl::element_xpath;
+use document::init_spider_document_events;
 use global::*;
 pub use msg::ActionMsg;
 use web_sys::HtmlElement;
@@ -47,41 +47,8 @@ pub fn launch_run() {
 // static old_element_xpath: GlobalSignal<String> = Signal::global(|| "".to_string());
 
 fn App() -> Element {
-    let mut selected_old_xpaths: Signal<SelectedXpathBox> =
-        use_signal(|| SelectedXpathBox::default());
-    let mut selected_new_xpaths: Signal<SelectedXpathBox> =
-        use_signal(|| SelectedXpathBox::default());
-    let msg_sender = use_coroutine(|mut rx| async move {
-        while let Some(msg) = rx.next().await {
-            match msg {
-                ActionMsg::SelectedFromMouseupEvent(s) => {
-                    {
-                        let selected_old_xpaths_ = selected_new_xpaths.read();
-                        selected_old_xpaths.set((*selected_old_xpaths_).clone());
-                    }
-                    selected_new_xpaths.set(s);
-                }
-                ActionMsg::SelectAllRelated => {
-                    let selected_new_xpaths_ = selected_new_xpaths.read();
-                    if selected_new_xpaths_.is_empty() {
-                        warn!("no selected nodes!");
-                        return;
-                    }
-                    let selected_old_xpaths_ = selected_old_xpaths.read();
-                    if !selected_old_xpaths_.is_empty() {
-                        handle_select_nodes((*selected_old_xpaths_).as_ref(), false);
-                    }
-                    handle_select_nodes((*selected_new_xpaths_).as_ref(), true);
-                }
-                ActionMsg::ClearSelectAllRelated => {
-                    
-                }
-                _ => todo!(),
-            }
-        }
-    });
-    init_document_events(msg_sender);
-
+    let msg_sender = init_spider_document_events();
+    // init_document_events(msg_sender);
     let mut count = use_signal(|| 0);
     rsx! {
         div {
@@ -92,6 +59,7 @@ fn App() -> Element {
 
             button { onclick: move |_| msg_sender.send(ActionMsg::SelectAllRelated), "select all related" }
             button { onclick: move |_| msg_sender.send(ActionMsg::ClearSelectAllRelated), "clear selected" }
+            button { onclick: move |_| msg_sender.send(ActionMsg::ToggleEnableMousemove), "toggle mousemove" }
 
         }
     }

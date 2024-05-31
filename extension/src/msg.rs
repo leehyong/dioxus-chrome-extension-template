@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use crate::SelectedXpathBox;
-#[derive(Debug)]
+use std::sync::Arc;
+#[derive(Debug, Clone, Copy)]
 pub enum ActionMsg {
-    SelectedFromMouseupEvent(SelectedXpathBox),
     SelectAllRelated,
 
     ClearSelectAllRelated,
+    ToggleEnableMousemove,
 }

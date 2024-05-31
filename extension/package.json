@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
+    "check": "wasm-pack build --release --no-typescript --out-dir './manifest-v3/src/wasm' --out-name 'better_spider' --target bundler",
     "build": "webpack --watch --progress",
     "build2": "webpack",
     "build:prod": "webpack --mode=production"
