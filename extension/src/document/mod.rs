@@ -35,7 +35,7 @@ impl BetterSpiderDocument {
             let mousemove_element = MousemoveElementRcRwlock::default();
             let mouseup_element = MouseupElementRcRwlock::default();
             self.init_mousemove_event(mousemove_element.clone());
-            self.init_mouseup_event(mouseup_element.clone());
+            self.init_mouseup_event(mousemove_element.clone(), mouseup_element.clone());
             self.handle_events(rx, mousemove_element.clone(), mouseup_element.clone());
         })
     }
@@ -44,7 +44,7 @@ impl BetterSpiderDocument {
         let window = web_sys::window().expect("should have a window in this context");
         let doc = window.document().expect("window should have a document");
         let doc2 = doc.clone();
-       
+
         let doc_listener = EventListener::new(&doc, "mousemove", move |event| {
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let x = event.client_x();
@@ -57,9 +57,9 @@ impl BetterSpiderDocument {
                     return;
                 }
                 debug!("start element EventListener about mousemove");
-                if let Some(mouse_element) = get_element_from_mouse_point(&doc2, x,y) {
+                if let Some(mouse_element) = get_element_from_mouse_point(&doc2, x, y) {
                     let mut move_ele = mousemove_element.write().await;
-                    if let Some(cur) =&move_ele.cur {
+                    if let Some(cur) = &move_ele.cur {
                         if mouse_element == *cur {
                             debug!("mouse element is the same with the current element!");
                             return;
@@ -78,10 +78,14 @@ impl BetterSpiderDocument {
         doc_listener.forget();
     }
 
-    fn init_mouseup_event(self, mouseup_element: MouseupElementRcRwlock) {
+    fn init_mouseup_event(
+        self,
+        mousemove_element: MousemoveElementRcRwlock,
+        mouseup_element: MouseupElementRcRwlock,
+    ) {
         let window = web_sys::window().expect("should have a window in this context");
         let doc1 = window.document().expect("window should have a document");
-        let doc2 = doc1.clone(); 
+        let doc2 = doc1.clone();
         let doc_listener = EventListener::new(&doc1, "mouseup", move |event| {
             let event = event.dyn_ref::<web_sys::MouseEvent>().unwrap_throw();
             let x = event.client_x();
@@ -91,16 +95,24 @@ impl BetterSpiderDocument {
                 return;
             }
             let mouseup_element = mouseup_element.clone();
+            let mousemove_element = mousemove_element.clone();
             let doc_ = doc2.clone();
             spawn_local(async move {
+                if mousemove_element.read().await.disabled {
+                    debug!("disabled element EventListener about mouseup");
+                    return;
+                }
                 // only the right button  handles this function
                 // 0：主按键，通常指鼠标左键或默认值（译者注：如 document.getElementById('a').click() 这样触发就会是默认值）
                 // 1：辅助按键，通常指鼠标滚轮中键
                 // 2：次按键，通常指鼠标右键
                 // https://developer.mozilla.org/zh-CN/docs/Web/API/MouseEvent/button
                 debug!("start element EventListener about mouseup of the right mouse button");
-                if let Some(mouse_element) = get_element_from_mouse_point(&doc_, x,y) {
-                    mouseup_element.write().await.set_element(&mouse_element);
+                if let Some(mouse_element) = get_element_from_mouse_point(&doc_, x, y) {
+                    mouseup_element
+                        .write()
+                        .await
+                        .toggle_one_element(&mouse_element);
                 }
             })
         });
@@ -115,6 +127,10 @@ impl BetterSpiderDocument {
     ) {
         spawn_local(async move {
             while let Some(msg) = rx.next().await {
+                if mousemove_element.read().await.disabled {
+                    debug!("disabled element EventListener about handle_events");
+                    return;
+                }
                 match msg {
                     ActionMsg::SelectAllRelated => {
                         info!("received: SelectAllRelated");
@@ -136,7 +152,7 @@ pub fn init_spider_document_events() -> Coroutine<ActionMsg> {
     SPIDER_DOCUMENT.init()
 }
 
-pub fn get_element_from_mouse_point(doc: &Document, x:i32, y:i32) -> Option<Element> {
+pub fn get_element_from_mouse_point(doc: &Document, x: i32, y: i32) -> Option<Element> {
     let spider_box = doc
         .get_element_by_id(SPIDER_BOX_ID)
         .expect(&format!("should have a '{}' of div ", SPIDER_BOX_ID));

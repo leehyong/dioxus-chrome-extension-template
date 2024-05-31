@@ -1,19 +1,27 @@
 use crate::uitl::*;
 use core::fmt::{Display, Formatter, Result as FmtResult};
-use std::thread::sleep;
 use cubob::{display_list, display_list_from_iter, display_struct};
-use std::collections::LinkedList;
+use std::collections::{LinkedList, VecDeque};
 use std::f64::consts::E;
+use std::thread::sleep;
 use tracing::info;
 use wasm_bindgen::JsCast;
+const MAX_ELEMENT_CNT: usize = 2;
 
 #[derive(Debug, Clone, Default)]
-pub(super) struct MouseupElement(LinkedList<web_sys::Element>);
+pub(super) struct MouseupElement(VecDeque<web_sys::Element>);
 
 impl MouseupElement {
-    const MAX_ELEMENT_CNT: usize = 2;
-    pub(super) fn set_element(&mut self, element: &web_sys::Element) {
-        if self.0.len() >= Self::MAX_ELEMENT_CNT {
+    pub(super) fn toggle_one_element(&mut self, element: &web_sys::Element) {
+        let idx = self.0.iter().position(|o| o == element);
+        if let Some(idx) = idx {
+            // find the element, and delete it, remove selected css class
+            self.0.remove(idx);
+            remove_selected(&element);
+            return;
+        }
+
+        if self.0.len() >= MAX_ELEMENT_CNT {
             if let Some(ele) = self.0.pop_front() {
                 remove_selected(&ele);
             }
@@ -22,15 +30,12 @@ impl MouseupElement {
         self.0.push_back(element.clone());
     }
 
-    pub(super) fn contains(&self, element:&web_sys::Element) -> bool{
+    pub(super) fn contains(&self, element: &web_sys::Element) -> bool {
         self.0.contains(element)
     }
 
     fn common_xpath(&self) -> Vec<String> {
-        self.0
-            .iter()
-            .map(|o| element_xpath(&o))
-            .collect::<Vec<_>>()
+        self.0.iter().map(|o| element_xpath(&o)).collect::<Vec<_>>()
     }
     fn get_all_elements_by_xpath(
         &self,
