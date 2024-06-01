@@ -34,7 +34,7 @@ impl MouseupElement {
         self.0.contains(element)
     }
 
-    fn common_xpath(&self) -> Vec<String> {
+    fn elements_xpath(&self) -> Vec<String> {
         self.0.iter().map(|o| element_xpath(&o)).collect::<Vec<_>>()
     }
     fn get_all_elements_by_xpath(
@@ -75,13 +75,16 @@ impl MouseupElement {
         }
         ret
     }
-    pub(super) fn selected_elements(&self, doc: &web_sys::Document) -> MouseupSelectedElement {
+    pub(super) fn toggle_related_elements(
+        &self,
+        doc: &web_sys::Document,
+    ) -> MouseupSelectedElement {
         let mut ret = MouseupSelectedElement::default();
-        match elements_common_xpath(&self.common_xpath()) {
+        match elements_common_xpath(&self.elements_xpath()) {
             Ok(common_xpath) => {
                 let cnt = self.0.len();
                 info!("elements common_xpath【{cnt},{self}】:{common_xpath}");
-                ret.ready = self.get_all_elements_by_xpath(&common_xpath, doc);
+                ret.nodes = self.get_all_elements_by_xpath(&common_xpath, doc);
                 ret.common_xpath = common_xpath;
             }
             Err(e) => {
@@ -119,7 +122,21 @@ impl Display for SelectedElement {
 #[derive(Debug, Clone, Default)]
 pub(super) struct MouseupSelectedElement {
     pub(super) common_xpath: String,
-    pub(super) ready: LinkedList<SelectedElement>,
+    pub(super) nodes: LinkedList<SelectedElement>,
+}
+
+impl MouseupSelectedElement {
+    pub(super)fn add_nodes_selected(&self){
+        self.nodes.iter().for_each(|n|{
+            add_selected(&n.element);
+        });
+    }
+    
+    pub(super)fn remove_nodes_selected(&self){
+        self.nodes.iter().for_each(|n|{
+            remove_selected(&n.element);
+        });
+    }
 }
 
 impl Display for MouseupSelectedElement {
@@ -129,9 +146,9 @@ impl Display for MouseupSelectedElement {
             &[
                 (&"common_xpath", &self.common_xpath),
                 (
-                    &"ready",
+                    &"nodes",
                     &self
-                        .ready
+                        .nodes
                         .iter()
                         .map(|o| o.to_string())
                         .collect::<Vec<_>>()

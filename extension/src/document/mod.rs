@@ -1,13 +1,15 @@
 use crate::ActionMsg;
 use crate::{uitl::*, SPIDER_BOX_ID};
 use dioxus::prelude::*;
+use dioxus_elements::select;
 use futures::channel::mpsc::UnboundedReceiver;
 use futures::StreamExt;
 use gloo::events::EventListener;
+use mouseup::MouseupSelectedElement;
 use once_cell::sync::Lazy;
 use web_sys::{Document, Element, Event, HtmlElement};
 
-use std::borrow::Cow;
+use std::borrow::{Borrow, BorrowMut, Cow};
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
@@ -25,6 +27,7 @@ static SPIDER_DOCUMENT: Lazy<BetterSpiderDocument> = Lazy::new(BetterSpiderDocum
 
 type MousemoveElementRcRwlock = Rc<RwLock<MousemoveElement>>;
 type MouseupElementRcRwlock = Rc<RwLock<MouseupElement>>;
+type MouseupSelectedElementRcRwlock = Rc<RwLock<Option<MouseupSelectedElement>>>;
 
 #[derive(Debug, Clone, Copy, Default)]
 struct BetterSpiderDocument;
@@ -126,6 +129,10 @@ impl BetterSpiderDocument {
         mouseup_element: MouseupElementRcRwlock,
     ) {
         spawn_local(async move {
+            let window = web_sys::window().expect("should have a window in this context");
+            let doc = window.document().expect("window should have a document");
+            let mouseup_selected_element = MouseupSelectedElementRcRwlock::default();
+            
             while let Some(msg) = rx.next().await {
                 if mousemove_element.read().await.disabled {
                     debug!("disabled element EventListener about handle_events");
@@ -134,6 +141,20 @@ impl BetterSpiderDocument {
                 match msg {
                     ActionMsg::SelectAllRelated => {
                         info!("received: SelectAllRelated");
+                        let mouseup_selected = mouseup_element
+                            .write()
+                            .await
+                            .borrow()
+                            .toggle_related_elements(&doc);
+                        let mut guard = mouseup_selected_element.write().await;
+                        let mut ms = guard.borrow_mut();
+                        let old = ms.take();
+                        if let Some(old) = old{
+                           old.remove_nodes_selected();
+                        }
+                        mouseup_selected.add_nodes_selected();
+                       **ms = Some(mouseup_selected);
+                       
                     }
                     ActionMsg::ClearSelectAllRelated => {
                         info!("received: ClearSelectAllRelated");
