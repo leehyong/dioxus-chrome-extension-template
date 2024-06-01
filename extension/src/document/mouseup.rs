@@ -13,9 +13,9 @@ pub(super) struct MouseupElement(VecDeque<web_sys::Element>);
 
 impl MouseupElement {
     pub(super) fn toggle_one_element(&mut self, element: &web_sys::Element) {
-        // it will have a selected class when a element is selected by automatically, 
+        // it will have a selected class when a element is selected by automatically,
         // then need to remove the class as if it is removed by hand.
-        if contains_selected(element){
+        if contains_selected(element) {
             remove_selected(&element);
             return;
         }
@@ -90,15 +90,17 @@ impl MouseupElement {
             Ok(common_xpath) => {
                 let cnt = self.0.len();
                 info!("elements common_xpath【{cnt},{self}】:{common_xpath}");
-                ret.nodes = self.get_all_elements_by_xpath(&common_xpath, doc);
-                ret.common_xpath = common_xpath;
+                if !common_xpath.is_empty() {
+                    ret.nodes = self.get_all_elements_by_xpath(&common_xpath, doc);
+                    ret.common_xpath = common_xpath;
+                }
             }
             Err(e) => {
                 tracing::error!("selected_elements:{e:?}");
             }
         }
         // clear all selected nodes when the nodes by selected automaticly  is not empty
-        if !ret.nodes.is_empty(){
+        if !ret.nodes.is_empty() {
             self.0.clear();
         }
         ret
@@ -136,15 +138,14 @@ pub(super) struct MouseupSelectedElement {
 }
 
 impl MouseupSelectedElement {
-    
-    pub(super)fn add_nodes_selected(&self){
-        self.nodes.iter().for_each(|n|{
+    pub(super) fn add_nodes_selected(&self) {
+        self.nodes.iter().for_each(|n| {
             add_selected(&n.element);
         });
     }
-    
-    pub(super)fn remove_nodes_selected(&self){
-        self.nodes.iter().for_each(|n|{
+
+    pub(super) fn remove_nodes_selected(&self) {
+        self.nodes.iter().for_each(|n| {
             remove_selected(&n.element);
         });
     }
