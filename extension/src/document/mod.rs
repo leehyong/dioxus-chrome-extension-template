@@ -132,29 +132,31 @@ impl BetterSpiderDocument {
             let window = web_sys::window().expect("should have a window in this context");
             let doc = window.document().expect("window should have a document");
             let mouseup_selected_element = MouseupSelectedElementRcRwlock::default();
-            
+
             while let Some(msg) = rx.next().await {
-                if mousemove_element.read().await.disabled {
-                    debug!("disabled element EventListener about handle_events");
-                    return;
-                }
                 match msg {
                     ActionMsg::SelectAllRelated => {
                         info!("received: SelectAllRelated");
                         let mouseup_selected = mouseup_element
                             .write()
                             .await
-                            .borrow()
+                            .borrow_mut()
                             .toggle_related_elements(&doc);
-                        let mut guard = mouseup_selected_element.write().await;
-                        let mut ms = guard.borrow_mut();
-                        let old = ms.take();
-                        if let Some(old) = old{
-                           old.remove_nodes_selected();
+                        if mouseup_selected.nodes.is_empty() {
+                            warn!(
+                                "【{}】: no elements selected",
+                                &mouseup_selected.common_xpath
+                            );
+                        } else {
+                            let mut guard = mouseup_selected_element.write().await;
+                            let mut ms = guard.borrow_mut();
+                            let old = ms.take();
+                            if let Some(old) = old {
+                                old.remove_nodes_selected();
+                            }
+                            mouseup_selected.add_nodes_selected();
+                            **ms = Some(mouseup_selected);
                         }
-                        mouseup_selected.add_nodes_selected();
-                       **ms = Some(mouseup_selected);
-                       
                     }
                     ActionMsg::ClearSelectAllRelated => {
                         info!("received: ClearSelectAllRelated");

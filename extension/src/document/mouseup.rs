@@ -76,7 +76,7 @@ impl MouseupElement {
         ret
     }
     pub(super) fn toggle_related_elements(
-        &self,
+        &mut self,
         doc: &web_sys::Document,
     ) -> MouseupSelectedElement {
         let mut ret = MouseupSelectedElement::default();
@@ -90,6 +90,10 @@ impl MouseupElement {
             Err(e) => {
                 tracing::error!("selected_elements:{e:?}");
             }
+        }
+        // clear all selected nodes when the nodes by selected automaticly  is not empty
+        if !ret.nodes.is_empty(){
+            self.0.clear();
         }
         ret
     }
@@ -126,6 +130,7 @@ pub(super) struct MouseupSelectedElement {
 }
 
 impl MouseupSelectedElement {
+    
     pub(super)fn add_nodes_selected(&self){
         self.nodes.iter().for_each(|n|{
             add_selected(&n.element);
