@@ -13,6 +13,12 @@ pub(super) struct MouseupElement(VecDeque<web_sys::Element>);
 
 impl MouseupElement {
     pub(super) fn toggle_one_element(&mut self, element: &web_sys::Element) {
+        // it will have a selected class when a element is selected by automatically, 
+        // then need to remove the class as if it is removed by hand.
+        if contains_selected(element){
+            remove_selected(&element);
+            return;
+        }
         let idx = self.0.iter().position(|o| o == element);
         if let Some(idx) = idx {
             // find the element, and delete it, remove selected css class

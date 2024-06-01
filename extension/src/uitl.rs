@@ -112,9 +112,6 @@ pub fn add_selected(element: &Element) {
         .class_list()
         .add_1(
             SELECTED_CLASS,
-            // "animate__pulse",
-            // "animate__infinite",
-            // "animate__slower",
         )
         .unwrap_or_default();
 }
@@ -124,11 +121,14 @@ pub fn remove_selected(element: &Element) {
         .class_list()
         .remove_1(
             SELECTED_CLASS,
-            // "animate__pulse",
-            // "animate__infinite",
-            // "animate__slower",
         )
         .unwrap_or_default();
 }
 
-
+pub fn contains_selected(element: &Element) -> bool{
+    element
+        .class_list()
+        .contains(
+            SELECTED_CLASS,
+        )
+}
