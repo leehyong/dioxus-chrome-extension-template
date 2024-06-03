@@ -48,45 +48,20 @@ impl MouseupElement {
         xpath: &str,
         doc: &web_sys::Document,
     ) -> LinkedList<SelectedElement> {
-        let mut ret = LinkedList::new();
-        match doc.evaluate_with_opt_callback_and_type(&xpath, &doc, None, 5) {
-            Ok(iter_res) => {
-                while let Ok(n) = iter_res.iterate_next() {
-                    if let Some(n) = n {
-                        // fixme:
-                        match n.dyn_into::<web_sys::Element>() {
-                            Ok(element) => {
-                                ret.push_back(SelectedElement {
-                                    element,
-                                    auto: false,
-                                });
-                            }
-                            Err(e) => {
-                                tracing::error!(
-                                    "{}-{}-{:?}",
-                                    e.node_name(),
-                                    e.node_type(),
-                                    e.node_value()
-                                );
-                            }
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-            Err(e) => {
-                tracing::error!("{e:?}");
-            }
-        }
-        ret
+        get_all_elements_by_xpath(xpath, doc)
+            .iter()
+            .map(|o| SelectedElement {
+                element: o.clone(),
+                auto: false,
+            })
+            .collect()
     }
     pub(super) fn toggle_related_elements(
         &mut self,
         doc: &web_sys::Document,
     ) -> MouseupSelectedElement {
         let mut ret = MouseupSelectedElement::default();
-        match elements_common_xpath(&self.elements_xpath()) {
+        match elements_common_xpath(&self.elements_xpath(), doc) {
             Ok(common_xpath) => {
                 let cnt = self.0.len();
                 info!("elements common_xpath【{cnt},{self}】:{common_xpath}");
