@@ -12,6 +12,12 @@ const MAX_ELEMENT_CNT: usize = 2;
 pub(super) struct MouseupElement(VecDeque<web_sys::Element>);
 
 impl MouseupElement {
+    pub(super) fn clear_selected(&mut self){
+        if !self.0.is_empty(){
+            self.0.iter().for_each(|ele|remove_selected(&ele));
+            self.0.clear();
+        }
+    }
     pub(super) fn toggle_one_element(&mut self, element: &web_sys::Element) {
         // it will have a selected class when a element is selected by automatically,
         // then need to remove the class as if it is removed by hand.

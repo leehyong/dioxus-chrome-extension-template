@@ -159,9 +159,12 @@ impl BetterSpiderDocument {
                         }
                     }
                     ActionMsg::ClearSelectAllRelated => {
-                        let mut guard = mouseup_selected_element.write().await;
-                        if let Some(sel) = guard.borrow_mut().take(){
-                            sel.remove_nodes_selected();
+                        mouseup_element.write().await.borrow_mut().clear_selected();
+                        {
+                            let mut guard = mouseup_selected_element.write().await;
+                            if let Some(sel) = guard.borrow_mut().take() {
+                                sel.remove_nodes_selected();
+                            }
                         }
                         info!("received: ClearSelectAllRelated");
                     }
